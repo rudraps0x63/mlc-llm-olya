@@ -11,7 +11,7 @@ curl -L %LLVM_INSTALLER_URL% -o %LLVM_INSTALLER_PATH%
 
 REM Step 3: Install LLVM silently
 echo Installing LLVM...
-"%LLVM_INSTALLER_PATH%" /S
+"%LLVM_INSTALLER_PATH%"
 
 REM Step 4: Add LLVM to PATH
 echo Adding LLVM to PATH...
