@@ -36,6 +36,8 @@ set "PATH=%PATH%;%MSYS2_PATH%\mingw64\bin"
 REM Verify installation
 echo Verifying LLVM installation...
 llvm-config --version
+where zlib1.dll
+dir "%MSYS2_PATH%\mingw64\bin"
 
 REM Cleanup
 echo Cleaning up...
