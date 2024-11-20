@@ -56,7 +56,7 @@ jobs:
           cmake ..
           # sed -i '' 's/\/opt\/homebrew/\/Users\/dev\/.local/g' ./CMakeFiles/tvm.dir/link.txt
           # sed -i '' 's/\/opt\/homebrew/\/Users\/dev\/.local/g' ./CMakeFiles/tvm.dir/build.make
-          cmake --build . --parallel 30
+          cmake --build .
           cd ..
           cd python
           pip install -e .
@@ -79,7 +79,7 @@ jobs:
           # source $HOME/.cargo/env
           source ./venv/bin/activate
           cd build
-          cmake --build . --parallel 30
+          cmake --build .
 
       # - name: Cleanup to free space
       #   run: |
