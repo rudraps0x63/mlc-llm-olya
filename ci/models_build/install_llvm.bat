@@ -1,47 +1,48 @@
 REM @echo off
+setlocal enabledelayedexpansion
 
-REM Step 1: Set LLVM version and download URL
-set LLVM_VERSION=15.0.0
-set LLVM_INSTALLER_URL=https://github.com/llvm/llvm-project/releases/download/llvmorg-%LLVM_VERSION%/LLVM-%LLVM_VERSION%-win64.exe
-set LLVM_INSTALLER_PATH=%TEMP%\LLVM-%LLVM_VERSION%-win64.exe
+REM Set variables
+set MSYS2_INSTALLER_URL=https://github.com/msys2/msys2-installer/releases/download/2024-01-13/msys2-x86_64-20240113.exe
+set MSYS2_INSTALLER_PATH=%TEMP%\msys2-installer.exe
+set MSYS2_PATH=D:\a\msys64
 
-REM Step 2: Download LLVM installer
-echo Downloading LLVM installer...
-curl -L %LLVM_INSTALLER_URL% -o %LLVM_INSTALLER_PATH%
+REM Download MSYS2 installer
+echo Downloading MSYS2 installer...
+curl -L %MSYS2_INSTALLER_URL% -o %MSYS2_INSTALLER_PATH%
 
-REM Step 3: Install LLVM silently with custom path
+REM Install MSYS2 silently
+echo Installing MSYS2...
+%MSYS2_INSTALLER_PATH% install --confirm-command --accept-messages --root %MSYS2_PATH%
+
+REM Wait a bit for installation to complete
+timeout /t 5
+
+REM Update MSYS2 packages
+echo Updating MSYS2...
+%MSYS2_PATH%\usr\bin\bash.exe -lc "pacman -Syu --noconfirm"
+
+REM Install LLVM
 echo Installing LLVM...
-"%LLVM_INSTALLER_PATH%" /S /D=D:\a\mlc-llm\llvm
+%MSYS2_PATH%\usr\bin\bash.exe -lc "pacman -S --noconfirm mingw-w64-x86_64-llvm"
 
-REM Verify installation directory exists
-echo Verifying installation directory...
-if not exist "D:\a\mlc-llm\llvm\bin" (
-    echo ERROR: LLVM installation directory not found!
-    echo Expected path: D:\a\mlc-llm\llvm\bin
-    dir "D:\a\mlc-llm\llvm"
-    exit /b 1
-)
-
-REM List contents of bin directory
-echo Listing LLVM bin directory contents:
-dir "D:\a\mlc-llm\llvm\bin"
-
-REM Step 5: Verify llvm-config installation using full path
-echo Verifying llvm-config installation...
-"D:\a\mlc-llm\llvm\bin\llvm-config.exe" --version
-
-REM Step 4: Add LLVM to PATH (only add the new path, don't append to existing)
+REM Add MSYS2 MinGW64 bin to PATH permanently
 echo Adding LLVM to PATH...
 for /f "tokens=2*" %%a in ('reg query "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path') do set "CURRENT_PATH=%%b"
-setx PATH "%CURRENT_PATH%;D:\a\mlc-llm\llvm\bin"
+setx PATH "%CURRENT_PATH%;%MSYS2_PATH%\mingw64\bin"
 
 REM Add to current session
-set "PATH=%PATH%;D:\a\mlc-llm\llvm\bin"
+set "PATH=%PATH%;%MSYS2_PATH%\mingw64\bin"
 
-REM Step 5: Verify llvm-config installation using full path
-echo Verifying llvm-config installation...
-"D:\a\mlc-llm\llvm\bin\llvm-config" --version
+REM Verify installation
+echo Verifying LLVM installation...
+llvm-config --version
 
-REM Step 6: Cleanup
+REM Cleanup
 echo Cleaning up...
-del /F /Q "%LLVM_INSTALLER_PATH%"
+del /F /Q "%MSYS2_INSTALLER_PATH%"
+
+echo Installation complete! Please restart your terminal to use LLVM.
+
+
+
+
