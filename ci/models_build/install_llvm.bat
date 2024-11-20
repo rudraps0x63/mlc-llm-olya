@@ -1,4 +1,4 @@
-@echo off
+REM @echo off
 
 REM Step 1: Set LLVM version and download URL
 set LLVM_VERSION=15.0.0
@@ -9,9 +9,26 @@ REM Step 2: Download LLVM installer
 echo Downloading LLVM installer...
 curl -L %LLVM_INSTALLER_URL% -o %LLVM_INSTALLER_PATH%
 
-REM Step 3: Install LLVM silently
+REM Step 3: Install LLVM silently with custom path
 echo Installing LLVM...
 "%LLVM_INSTALLER_PATH%" /S /D=%~dp0..\llvm
+
+REM Verify installation directory exists
+echo Verifying installation directory...
+if not exist "%~dp0..\llvm\bin" (
+    echo ERROR: LLVM installation directory not found!
+    echo Expected path: %~dp0..\llvm\bin
+    dir "%~dp0..\llvm"
+    exit /b 1
+)
+
+REM List contents of bin directory
+echo Listing LLVM bin directory contents:
+dir "%~dp0..\llvm\bin"
+
+REM Step 5: Verify llvm-config installation using full path
+echo Verifying llvm-config installation...
+"%~dp0..\llvm\bin\llvm-config.exe" --version
 
 REM Step 4: Add LLVM to PATH (only add the new path, don't append to existing)
 echo Adding LLVM to PATH...
