@@ -29,8 +29,7 @@ jobs:
 
     steps:
     - name: Install LLVM
-        shell: cmd
-        run: cmd /C call ./ci/models_build/install_llvm.bat
+      run: ./ci/models_build/install_llvm.bat
     - name: Git config
       run: >-
         git config --system core.longpaths true
