@@ -1,0 +1,62 @@
+# GH actions.
+# We use it to cover windows builds
+# Jenkins is still the primary CI
+name: build windows models
+
+on:
+  workflow_dispatch:
+    inputs:
+      quantization:
+        description: "Choose quantization for model"
+        required: true
+        default: "q0f32"
+        type: choice
+        options:
+          - q0f32
+          - q4f32_1
+      language_pair:
+        description: "language pair"
+        required: true
+        default: "en-it"
+        type: string
+
+jobs:
+  Build-Marian-Windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: 'cmd /C call {0}'
+
+    steps:
+    - name: Git config
+      run: >-
+        git config --system core.longpaths true
+    - uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        activate-environment: mlc-llm-build
+        channel-priority: strict
+        environment-file: ci/build-environment.yaml
+        auto-activate-base: false
+    - name: Conda info
+      run: |
+        conda info
+        conda list
+        python --version
+    - name: Build MLC-LLM
+      run: >-
+        ci/task/build_win.bat
+
+    - name: install mlc-llm
+      run: |
+        cd build
+        pip install -e .
+    - name: download the model
+      run: |
+        git clone https://huggingface.co/Helsinki-NLP/opus-mt-en-it
+    - name: compile model
+      run: >-
+        ci/models_build/marian.bat
+
