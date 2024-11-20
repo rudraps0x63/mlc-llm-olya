@@ -96,6 +96,7 @@ jobs:
 
       - name: Compile model
         run: |
+          source ./venv/bin/activate
           ./ci/models_build/marian.sh "${{ github.event.inputs.quantization }}" "${{ github.event.inputs.language_pair }}"
 
       - name: Upload compiled model as artifact
