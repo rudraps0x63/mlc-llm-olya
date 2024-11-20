@@ -46,8 +46,13 @@ jobs:
         conda list
         python --version
     - name: Build MLC-LLM
-      run: >-
-        ci/task/build_win.bat
+      run: |
+        mkdir build
+        cd build 
+        echo "set(USE_VULKAN ON)" >>config.cmake
+        type config.cmake
+        cmake ..
+        cmake --build . --parallel 3
 
     - name: install mlc-llm
       run: |
