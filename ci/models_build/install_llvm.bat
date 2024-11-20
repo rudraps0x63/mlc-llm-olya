@@ -11,36 +11,36 @@ curl -L %LLVM_INSTALLER_URL% -o %LLVM_INSTALLER_PATH%
 
 REM Step 3: Install LLVM silently with custom path
 echo Installing LLVM...
-"%LLVM_INSTALLER_PATH%" /S /D=%~dp0..\llvm
+"%LLVM_INSTALLER_PATH%" /S /D=D:\a\mlc-llm\llvm
 
 REM Verify installation directory exists
 echo Verifying installation directory...
-if not exist "%~dp0..\llvm\bin" (
+if not exist "D:\a\mlc-llm\llvm\bin" (
     echo ERROR: LLVM installation directory not found!
-    echo Expected path: %~dp0..\llvm\bin
-    dir "%~dp0..\llvm"
+    echo Expected path: D:\a\mlc-llm\llvm\bin
+    dir "D:\a\mlc-llm\llvm"
     exit /b 1
 )
 
 REM List contents of bin directory
 echo Listing LLVM bin directory contents:
-dir "%~dp0..\llvm\bin"
+dir "D:\a\mlc-llm\llvm\bin"
 
 REM Step 5: Verify llvm-config installation using full path
 echo Verifying llvm-config installation...
-"%~dp0..\llvm\bin\llvm-config.exe" --version
+"D:\a\mlc-llm\llvm\bin\llvm-config.exe" --version
 
 REM Step 4: Add LLVM to PATH (only add the new path, don't append to existing)
 echo Adding LLVM to PATH...
 for /f "tokens=2*" %%a in ('reg query "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path') do set "CURRENT_PATH=%%b"
-setx PATH "%CURRENT_PATH%;%~dp0..\llvm\bin"
+setx PATH "%CURRENT_PATH%;D:\a\mlc-llm\llvm\bin"
 
 REM Add to current session
-set "PATH=%PATH%;%~dp0..\llvm\bin"
+set "PATH=%PATH%;D:\a\mlc-llm\llvm\bin"
 
 REM Step 5: Verify llvm-config installation using full path
 echo Verifying llvm-config installation...
-"%~dp0..\llvm\bin\llvm-config" --version
+"D:\a\mlc-llm\llvm\bin\llvm-config" --version
 
 REM Step 6: Cleanup
 echo Cleaning up...
