@@ -50,6 +50,7 @@ jobs:
         python --version
     - name: build tvm
       run: |
+        set "PATH=%PATH%;%MSYS2_PATH%\mingw64\bin"
         cd ..
         git clone --recursive https://github.com/apache/tvm tvm
         cd tvm
