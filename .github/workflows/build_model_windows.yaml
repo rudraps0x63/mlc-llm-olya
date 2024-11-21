@@ -63,34 +63,44 @@ jobs:
         echo set(CMAKE_CXX_FLAGS "/bigobj") >> config.cmake
         echo set(CMAKE_EXE_LINKER_FLAGS "/LARGEADDRESSAWARE") >>  config.cmake
         echo set(CMAKE_SHARED_LINKER_FLAGS "/LARGEADDRESSAWARE") >> config.cmake
-        echo set(CMAKE_STATIC_LINKER_FLAGS "/LARGEADDRESSAWARE") >> config.cmake  # Add this line
+        #echo set(CMAKE_STATIC_LINKER_FLAGS "/LARGEADDRESSAWARE") >> config.cmake  # Add this line
         echo set(CMAKE_BUILD_TYPE Release) >> config.cmake
-        echo set(USE_LLVM "llvm-config --ignore-libllvm --link-static") >> config.cmake
+        echo set(USE_LLVM "llvm-config --ignore-libllvm") >> config.cmake
         echo set(HIDE_PRIVATE_SYMBOLS ON) >> config.cmake
         echo set(USE_VULKAN ON) >> config.cmake
         cmake .. -DCMAKE_CXX_FLAGS="/bigobj" -DCMAKE_EXE_LINKER_FLAGS="/LARGEADDRESSAWARE" -DCMAKE_SHARED_LINKER_FLAGS="/LARGEADDRESSAWARE" -DCMAKE_STATIC_LINKER_FLAGS="/LARGEADDRESSAWARE"
-        cmake --build . --parallel 3 --verbose
-        cd ..
-        cd python
-        pip install -e .
-    - name: Build MLC-LLM
-      run: |
-        mkdir build
-        cd build 
-        echo set(USE_VULKAN ON) >>config.cmake
-        echo set(TVM_SOURCE_DIR, $GITHUB_WORKSPACE/../tvm) >> config.cmake
-        type config.cmake
-        cmake ..
-        cmake --build . --parallel 3 
+        cmake --build . --parallel 3 --verbose --config Release
+        # Diagnostic commands
+        echo "Listing all object files and their sizes:"
+        dir /s *.obj | sort
+        
+        echo "Checking LLVM configuration:"
+        llvm-config --components
+        llvm-config --libs
+        llvm-config --system-libs
+        llvm-config --cxxflags
 
-    - name: install mlc-llm
-      run: |
-        cd python
-        pip install -e .
-    - name: download the model
-      run: |
-        git clone https://huggingface.co/Helsinki-NLP/opus-mt-en-it
-    - name: compile model
-      run: >-
-        ci/models_build/marian.bat
+    #     cd ..
+    #     cd python
+    #     pip install -e .
+    # - name: Build MLC-LLM
+    #   run: |
+    #     mkdir build
+    #     cd build 
+    #     echo set(USE_VULKAN ON) >>config.cmake
+    #     echo set(TVM_SOURCE_DIR, $GITHUB_WORKSPACE/../tvm) >> config.cmake
+    #     type config.cmake
+    #     cmake ..
+    #     cmake --build . --parallel 3 
+
+    # - name: install mlc-llm
+    #   run: |
+    #     cd python
+    #     pip install -e .
+    # - name: download the model
+    #   run: |
+    #     git clone https://huggingface.co/Helsinki-NLP/opus-mt-en-it
+    # - name: compile model
+    #   run: >-
+    #     ci/models_build/marian.bat
 

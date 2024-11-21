@@ -57,7 +57,11 @@ class MLCChatConfig(BaseModel):
     pad_token_id: Optional[int] = None
     bos_token_id: Optional[int] = None
     eos_token_id: Optional[Union[int, List[int]]] = None
-    decoder_start_token_id: int = None #needed for marian and whisper
+    decoder_start_token_id: Optional[int] = None #needed for marian and whisper
+    suppress_tokens: Optional[ List[int]] = None
+    forced_decoder_ids: Optional[List[Any]] = None
+    begin_suppress_tokens: Optional[List[int]] = None
+
 
     def get_system_defaults_for_missing_fields(self) -> Dict[str, Any]:
         """Apply system default value for fields that are None

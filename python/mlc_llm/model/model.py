@@ -38,6 +38,7 @@ from .rwkv6 import rwkv6_loader, rwkv6_model, rwkv6_quantization
 from .stable_lm import stablelm_loader, stablelm_model, stablelm_quantization
 from .starcoder2 import starcoder2_loader, starcoder2_model, starcoder2_quantization
 from .marian import marian_loader, marian_model, marian_quantization
+from .whisper_tiny import whisper_loader, whisper_model, whisper_quantization
 
 ModelConfig = Any
 """A ModelConfig is an object that represents a model architecture. It is required to have
@@ -97,6 +98,21 @@ MODELS: Dict[str, Model] = {
             "ft-quant": llama_quantization.ft_quant,
             "awq": llama_quantization.awq_quant,
             "per-tensor-quant": llama_quantization.per_tensor_quant,
+        },
+    ),
+     "whisper-tiny": Model(
+        name="whisper-tiny",
+        model=whisper_model.WhisperForConditionalGeneration,
+        config=whisper_model.WhisperConfig,
+        source={
+            "huggingface-torch": whisper_loader.huggingface,
+            "huggingface-safetensor": whisper_loader.huggingface,
+            "awq": whisper_loader.awq,
+        },
+        quantize={
+            "no-quant": whisper_quantization.no_quant,
+            "group-quant": whisper_quantization.group_quant,
+            "awq": whisper_quantization.awq_quant,
         },
     ),
      "marian": Model(

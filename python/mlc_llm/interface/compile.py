@@ -100,7 +100,7 @@ def _infer_kv_state_kind(model_type) -> str:
         return "rnn_state"
     if "medusa" in model_type:
         return "none"
-    if "marian" in model_type:
+    if "marian"  in model_type or "whisper-tiny" in model_type:
         return "none"
     return "kv_cache"
 

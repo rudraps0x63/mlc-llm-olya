@@ -27,5 +27,6 @@ from . import (
     tinyllama,
     wizardlm,
     marian,
+    whisper_tiny
 )
 from .registry import ConvTemplateRegistry

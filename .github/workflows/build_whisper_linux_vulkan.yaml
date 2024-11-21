@@ -1,4 +1,4 @@
-name: Compile Marian model
+name: Compile Whisper model
 
 on:
   workflow_dispatch:
@@ -11,19 +11,14 @@ on:
         options:
           - q0f32
           - q4f32_1
-      language_pair:
-        description: "language pair"
-        required: true
-        default: "en-it"
-        type: string
-
+   
 
 jobs:
 
-  compile-marian-model:
+  compile-wisper-model:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/tetherto/models_build:ubuntu22.04_vulkan
+      image: ghcr.io/olyasir/models_build:ubuntu22.04_vulkan
 
     steps:
       
@@ -72,7 +67,7 @@ jobs:
 
     
       - name: Download model
-        run: git-lfs install && git clone https://huggingface.co/Helsinki-NLP/opus-mt-${{ github.event.inputs.language_pair }}
+        run: git-lfs install && git clone https://huggingface.co/openai/whisper-tiny
 
       - name: Create build directory
         shell: bash
@@ -96,11 +91,16 @@ jobs:
 
       - name: Compile model
         run: |
-            ./ci/models_build/marian.sh "${{ github.event.inputs.quantization }}" "${{ github.event.inputs.language_pair }}"
-
+            ./ci/models_build/whisper.sh "${{ github.event.inputs.quantization }}" vulkan
+      - name: fix mlc-chat-config.json
+        run: |
+            apt-get install jq
+            jq '.forced_decoder_ids = [[1,50259],[2,50359],[3,50364]]' output-whisper-${{ github.event.inputs.quantization }}/mlc-chat-config.json > temp.json && mv temp.json output-whisper-${{ github.event.inputs.quantization }}/mlc-chat-config.json
       - name: Upload compied model as artifact
         uses: actions/upload-artifact@v3
         with:
-          name: output-${{ github.event.inputs.quantization }}-opus-mt-${{ github.event.inputs.language_pair }}
-          path: output-${{ github.event.inputs.quantization }}-opus-mt-${{ github.event.inputs.language_pair }}/
+          name: output-whisper-${{ github.event.inputs.quantization }}
+          path: output-whisper-${{ github.event.inputs.quantization }}/
             
+
+
