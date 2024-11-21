@@ -50,6 +50,7 @@ jobs:
         python --version
     - name: build tvm
       run: |
+        conda install zlib
         set "PATH=%PATH%;D:\a\msys64\mingw64\bin"
         cd ..
         git clone --recursive https://github.com/apache/tvm tvm
