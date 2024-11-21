@@ -61,6 +61,8 @@ jobs:
         mkdir build
         cd build
         cp ../cmake/config.cmake .
+        echo set(CMAKE_CXX_FLAGS "/bigobj") >> config.cmake
+        echo set(CMAKE_EXE_LINKER_FLAGS "/LARGEADDRESSAWARE") >>  config.cmake
         echo set(CMAKE_BUILD_TYPE RelWithDebInfo) >> config.cmake
         echo set(USE_LLVM "llvm-config --ignore-libllvm --link-static") >> config.cmake
         echo set(HIDE_PRIVATE_SYMBOLS ON) >> config.cmake
