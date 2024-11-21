@@ -1,0 +1,125 @@
+name: Compile Marian model
+
+on:
+  workflow_dispatch:
+    inputs:
+      quantization:
+        description: "Choose quantization for model"
+        required: true
+        default: "q0f32"
+        type: choice
+        options:
+          - q0f32
+          - q4f32_1
+          - q4_f16
+     
+jobs:
+  compile-llama-model:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/tetherto/models_build:ubuntu22.04_vulkan
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+        with:
+          ref: base/v1
+          fetch-depth: 1  # Only fetch the latest commit
+
+      
+      # Step 2: Install s3fs
+      - name: Install s3fs
+        run: |
+          sudo apt update
+          sudo apt install -y s3fs
+
+      # Step 3: Configure AWS credentials
+      - name: Configure AWS credentials
+        run: |
+          echo "${{ secrets.AWS_ACCESS_KEY_ID }}:${{ secrets.AWS_SECRET_ACCESS_KEY }}" > ~/.passwd-s3fs
+          chmod 600 ~/.passwd-s3fs
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # Step 4: Mount the S3 bucket with minimal caching
+      - name: Mount S3 bucket
+        run: |
+          mkdir -p ~/s3bucket
+          s3fs qvac_models ~/s3bucket -o nocache
+
+      # Step 5: Stream a large file from S3
+      - name: Process large file
+        run: |
+          ls ~/s3bucket/TinyLlama-1.1B-Chat-v1.0/  # Example: Stream first 100 lines
+
+      # - name: Install Rust manually
+      #   run: |
+      #     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+      #     echo "$HOME/.cargo/bin" >> $GITHUB_PATH  # Add Rust to the PATH for GitHub Actions
+
+      # - name: Source Rust environment
+      #   shell: bash
+      #   run: source $HOME/.cargo/env && rustup --version && cargo --version
+
+      # - name: Mark repository as safe
+      #   run: |
+      #     git config --global --add safe.directory /__w/mlc-llm/mlc-llm
+
+      # - name: get submodules
+      #   run: |
+      #       git submodule update --init --recursive
+
+      # - name: install tvm
+      #   run: |
+      #       cd /tvm/python
+      #       pip install -e .
+
+      # - name: verify tvm installation
+      #   run: |
+      #       echo "Verifying tvm instalation "
+      #       python -c "import tvm; print(tvm.__file__)"
+
+
+      # - name: Run a command in the container
+      #   run: |
+      #     echo "Verifying vulkan instalation "
+      #     python --version
+      #     vulkaninfo
+      #     cargo --version
+      #     pwd 
+      #     rustup --version
+
+      # - name: Create build directory
+      #   shell: bash
+      #   run: |
+      #       mkdir build && cd build && cp ../cmake/config.cmake .
+      #       echo "set(USE_VULKAN ON)" >> config.cmake
+      #       cmake ..
+
+      # - name: Build the project
+      #   shell: bash
+      #   run: |
+      #      source $HOME/.cargo/env && cd build && cmake --build . 
+
+      # - name: cleanup #needed as there is only 15G on runner, not enough for mlc-llm instalation
+      #   run: rm -rf $HOME/.cargo $HOME/.rustup 3rdpary/tvm  /__t/CodeQL
+
+      # - name: Install mlc-llm
+      #   run: |
+      #      cd python && pip install -e .
+
+      # - name: Compile model
+      #   run: |
+      #       ./ci/models_build/llama.sh "${{ github.event.inputs.quantization }}" vulkan
+
+      # - name: Upload compied model as artifact
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: output-${{ github.event.inputs.quantization }}-llama
+      #     path: output-${{ github.event.inputs.quantization }}-llama
+            
+
+      # - name: Unmount S3 bucket
+      #   run: |
+      #     fusermount -u ~/s3bucket
