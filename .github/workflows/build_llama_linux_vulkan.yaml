@@ -30,8 +30,8 @@ jobs:
       # Step 2: Install s3fs
       - name: Install s3fs
         run: |
-          sudo apt update
-          sudo apt install -y s3fs
+          apt update
+          apt install -y s3fs
 
       # Step 3: Configure AWS credentials
       - name: Configure AWS credentials
