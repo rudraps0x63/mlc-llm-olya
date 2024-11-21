@@ -51,7 +51,9 @@ jobs:
         python --version
     - name: build tvm
       run: |
-        set "PATH=%PATH%;D:\a\msys64\mingw64\bin"
+        set "PATH=%PATH%;D:\a\msys64\mingw64\bin;D:\a\msys64\mingw64\include;D:\a\msys64\mingw64"
+        set ZLIB_LIBRARY=D:\a\msys64\mingw64\bin\zlib1.dll
+        # set ZLIB_INCLUDE_DIR==D:\a\msys64\mingw64\include
         cd ..
         git clone --recursive https://github.com/apache/tvm tvm
         cd tvm

@@ -37,7 +37,10 @@ REM Verify installation
 echo Verifying LLVM installation...
 llvm-config --version
 where zlib1.dll
+REM dir bin
 dir "%MSYS2_PATH%\mingw64\bin"
+REM dir include
+dir "%MSYS2_PATH%\mingw64\include"
 
 REM Cleanup
 echo Cleaning up...
