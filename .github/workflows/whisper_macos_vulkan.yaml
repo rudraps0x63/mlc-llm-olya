@@ -40,9 +40,9 @@ jobs:
           export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
           source ./venv/bin/activate
           cd ..
-          git clone --recursive https://github.com/apache/tvm tvm
+          git clone --recursive https://github.com/mlc-ai/relax.git tvm
           cd tvm
-          git reset --hard d5b9f5c30bc3e1f5e1a283ed19c5440afcc45889
+          git reset --hard 176d01e61276b0e94910fd904363ef4cd91fb8b5
           mkdir build
           cd build
           cp ../cmake/config.cmake .
