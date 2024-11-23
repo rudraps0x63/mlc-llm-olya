@@ -94,7 +94,7 @@ jobs:
             ./ci/models_build/whisper.sh "${{ github.event.inputs.quantization }}" vulkan
       - name: fix mlc-chat-config.json
         run: |
-            apt-get install jq
+            apt-get install -y jq
             jq '.forced_decoder_ids = [[1,50259],[2,50359],[3,50364]]' output-whisper-${{ github.event.inputs.quantization }}/mlc-chat-config.json > temp.json && mv temp.json output-whisper-${{ github.event.inputs.quantization }}/mlc-chat-config.json
       - name: Upload compied model as artifact
         uses: actions/upload-artifact@v3
