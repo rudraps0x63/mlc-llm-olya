@@ -1,5 +1,5 @@
 quantization="$1"
-device="${2:vulkan}"
+device="${2:-vulkan}"
 
 
 python -m mlc_llm convert_weight --model-type whisper-tiny ./whisper-tiny/ --quantization "$quantization" --output "./output-whisper-$quantization"
