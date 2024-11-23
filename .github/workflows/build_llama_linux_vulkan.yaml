@@ -14,112 +14,119 @@ on:
           - q4_f16
      
 jobs:
-  compile-llama-model:
+
+  compile-llama-model1:
     runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: read
+      packages: write
     container:
       image: ghcr.io/olyasir/models_build:ubuntu22.04_vulkan
-
+      options: --privileged --rm
+  
     steps:
+      - name: Install Node.js
+        run: |
+          apt-get update
+          apt-get install -y nodejs npm
       - name: Check out repository
         uses: actions/checkout@v3
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           ref: base/v1
           fetch-depth: 1  # Only fetch the latest commit
-
-      
-      # Step 2: Install s3fs
-      - name: Install s3fs
+      - name: Mark repository as safe
         run: |
-          apt update
-          apt install -y s3fs
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+          git config --global --add safe.directory /__w/mlc-llm/mlc-llm
 
-      # Step 3: Configure AWS credentials
-      - name: Configure AWS credentials
+       # Step 2: Set up AWS CLI
+      - name: Install AWS CLI
         run: |
-          echo "${{ secrets.AWS_ACCESS_KEY_ID }}:${{ secrets.AWS_SECRET_ACCESS_KEY }}" > ~/.passwd-s3fs
-          chmod 600 ~/.passwd-s3fs
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          apt-get update
+          apt-get install -y unzip
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          ./aws/install
 
-      # Step 4: Mount the S3 bucket with minimal caching
-      - name: Mount S3 bucket
+      # Step 3: Configure AWS CLI (Assuming you have AWS credentials set as secrets)
+      - name: Configure AWS CLI
         run: |
-          mkdir -p ~/s3bucket
-          s3fs qvac_models ~/s3bucket -o nocache
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws configure set region us-east-1  # Specify your desired region
 
-      # Step 5: Stream a large file from S3
-      - name: Process large file
+      # Step 4: Download directory from S3
+      - name: Download directory from S3
         run: |
-          ls ~/s3bucket/TinyLlama-1.1B-Chat-v1.0/  # Example: Stream first 100 lines
+          aws s3 cp s3://qvac-models/TinyLlama-1.1B-Chat-v1.0/ ./TinyLlama-1.1B-Chat-v1.0/ --recursive
+          ls -l ./TinyLlama-1.1B-Chat-v1.0
 
-      # - name: Install Rust manually
-      #   run: |
-      #     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-      #     echo "$HOME/.cargo/bin" >> $GITHUB_PATH  # Add Rust to the PATH for GitHub Actions
-
-      # - name: Source Rust environment
-      #   shell: bash
-      #   run: source $HOME/.cargo/env && rustup --version && cargo --version
-
-      # - name: Mark repository as safe
-      #   run: |
-      #     git config --global --add safe.directory /__w/mlc-llm/mlc-llm
-
-      # - name: get submodules
-      #   run: |
-      #       git submodule update --init --recursive
-
-      # - name: install tvm
-      #   run: |
-      #       cd /tvm/python
-      #       pip install -e .
-
-      # - name: verify tvm installation
-      #   run: |
-      #       echo "Verifying tvm instalation "
-      #       python -c "import tvm; print(tvm.__file__)"
-
-
-      # - name: Run a command in the container
-      #   run: |
-      #     echo "Verifying vulkan instalation "
-      #     python --version
-      #     vulkaninfo
-      #     cargo --version
-      #     pwd 
-      #     rustup --version
-
-      # - name: Create build directory
-      #   shell: bash
-      #   run: |
-      #       mkdir build && cd build && cp ../cmake/config.cmake .
-      #       echo "set(USE_VULKAN ON)" >> config.cmake
-      #       cmake ..
-
-      # - name: Build the project
-      #   shell: bash
-      #   run: |
-      #      source $HOME/.cargo/env && cd build && cmake --build . 
-
-      # - name: cleanup #needed as there is only 15G on runner, not enough for mlc-llm instalation
-      #   run: rm -rf $HOME/.cargo $HOME/.rustup 3rdpary/tvm  /__t/CodeQL
-
-      # - name: Install mlc-llm
-      #   run: |
-      #      cd python && pip install -e .
-
-      # - name: Compile model
-      #   run: |
-      #       ./ci/models_build/llama.sh "${{ github.event.inputs.quantization }}" vulkan
-
-      # - name: Upload compied model as artifact
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: output-${{ github.event.inputs.quantization }}-llama
-      #     path: output-${{ github.event.inputs.quantization }}-llama
+   
             
+      - name: Install Rust manually
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH  # Add Rust to the PATH for GitHub Actions
 
-      # - name: Unmount S3 bucket
-      #   run: |
-      #     fusermount -u ~/s3bucket
+      - name: Source Rust environment
+        shell: bash
+        run: source $HOME/.cargo/env && rustup --version && cargo --version
+
+      - name: Mark repository as safe
+        run: |
+          git config --global --add safe.directory /__w/mlc-llm/mlc-llm
+
+      - name: get submodules
+        run: |
+            git submodule update --init --recursive
+
+      - name: install tvm
+        run: |
+            cd /tvm/python
+            pip install -e .
+
+      - name: verify tvm installation
+        run: |
+            echo "Verifying tvm instalation "
+            python -c "import tvm; print(tvm.__file__)"
+
+      - name: Run a command in the container
+        run: |
+          echo "Verifying vulkan instalation "
+          python --version
+          vulkaninfo
+          cargo --version
+          pwd 
+          rustup --version
+
+      - name: Create build directory
+        shell: bash
+        run: |
+            mkdir build && cd build && cp ../cmake/config.cmake .
+            echo "set(USE_VULKAN ON)" >> config.cmake
+            echo "set(TVM_SOURCE_DIR /tvm)" >> config.cmake
+            cmake ..
+
+      - name: Build the project
+        shell: bash
+        run: |
+           source $HOME/.cargo/env && cd build && cmake --build . 
+
+      - name: cleanup #needed as there is only 15G on runner, not enough for mlc-llm instalation
+        run: rm -rf $HOME/.cargo $HOME/.rustup 3rdpary/tvm  /__t/CodeQL
+
+      - name: Install mlc-llm
+        run: |
+           cd python && pip install -e .
+
+      - name: Compile model
+        run: |
+            ./ci/models_build/tiny_llama.sh "${{ github.event.inputs.quantization }}" vulkan
+
+      - name: Upload compied model as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: output-TinyLlama-1.1B-Chat-v1.0-${{ github.event.inputs.quantization }}
+          path: output-TinyLlama-1.1B-Chat-v1.0-${{ github.event.inputs.quantization }}
