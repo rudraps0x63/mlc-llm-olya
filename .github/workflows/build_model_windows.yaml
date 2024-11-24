@@ -50,7 +50,7 @@ jobs:
         conda install zlib
         python --version
     - name: Install Visual Studio Build Tools 2022
-        run: |
+      run: |
           choco install visualstudio2022buildtools --version=17.11.9
           refreshenv
     - name: build tvm
