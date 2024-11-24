@@ -1,4 +1,4 @@
-name: Compile Llama model
+name: Compile Llama linux vulkan
 
 on:
   workflow_dispatch:
@@ -11,18 +11,32 @@ on:
         options:
           - q0f32
           - q4f32_1
-          - q4_f16
+          - q4_f16_1
+      model:
+        description: "Choose llama model"
+        required: true
+        default: "q0f32"
+        type: choice
+        options:
+          - TinyLlama-1.1B-Chat-v1.0
+          - Llama-3.1-8B-Instruct
+      gen_config_type:
+        description: "model type for coversation template. (--conv-template tinyllama_v1_0, llama-3_1). See available templates in gen_config.py"
+        required: true
+        default: "q0f32"
+        type: string
+    
      
 jobs:
 
-  compile-llama-model1:
-    runs-on: ubuntu-latest
+  compile-llama-model:
+    runs-on: ai-run-linux
     timeout-minutes: 120
     permissions:
       contents: read
       packages: write
     container:
-      image: ghcr.io/olyasir/models_build:ubuntu22.04_vulkan
+      image: ghcr.io/olyasir/models_build:ubuntu22.04_vulkan_mlc
       options: --privileged --rm
   
     steps:
@@ -60,10 +74,8 @@ jobs:
       # Step 4: Download directory from S3
       - name: Download directory from S3
         run: |
-          aws s3 cp s3://qvac-models/TinyLlama-1.1B-Chat-v1.0/ ./TinyLlama-1.1B-Chat-v1.0/ --recursive
-          ls -l ./TinyLlama-1.1B-Chat-v1.0
-
-   
+          aws s3 cp s3://qvac-models/${{ github.event.inputs.model }}/ ./${{ github.event.inputs.model }}/ --recursive
+          ls -l ./${{ github.event.inputs.model }}
             
       - name: Install Rust manually
         run: |
@@ -114,7 +126,7 @@ jobs:
         run: |
            source $HOME/.cargo/env && cd build && cmake --build . 
 
-      - name: cleanup #needed as there is only 15G on runner, not enough for mlc-llm instalation
+      - name: cleanup 
         run: rm -rf $HOME/.cargo $HOME/.rustup 3rdpary/tvm  /__t/CodeQL
 
       - name: Install mlc-llm
@@ -123,10 +135,10 @@ jobs:
 
       - name: Compile model
         run: |
-            ./ci/models_build/tiny_llama.sh "${{ github.event.inputs.quantization }}" vulkan
+          ./ci/models_build/llama.sh "${{ github.event.inputs.quantization }}" vulkan "${{ github.event.inputs.model }}" "${{ github.event.inputs.gen_config_type }}"
 
       - name: Upload compied model as artifact
         uses: actions/upload-artifact@v3
         with:
-          name: output-TinyLlama-1.1B-Chat-v1.0-${{ github.event.inputs.quantization }}
-          path: output-TinyLlama-1.1B-Chat-v1.0-${{ github.event.inputs.quantization }}
+          name: output-${{ github.event.inputs.model }}-${{ github.event.inputs.quantization }}
+          path: output-${{ github.event.inputs.model }}-${{ github.event.inputs.quantization }}
