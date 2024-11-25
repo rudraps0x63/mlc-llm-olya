@@ -58,36 +58,21 @@ jobs:
         set "PATH=%PATH%;D:\a\msys64\mingw64\bin;D:\a\msys64\mingw64\include;D:\a\msys64\mingw64"
         set ZLIB_LIBRARY=D:\a\msys64\mingw64\bin\zlib1.dll
         cd ..
-        git clone --recursive https://github.com/apache/tvm tvm
+        git clone -b mlc --recursive https://github.com/mlc-ai/relax.git tvm
         cd tvm
-        git reset --hard d5b9f5c30bc3e1f5e1a283ed19c5440afcc45889
+        git reset --hard 176d01e61276b0e94910fd904363ef4cd91fb8b5
         mkdir build
         cd build
         cp ../cmake/config.cmake .
-        echo set(CMAKE_CXX_FLAGS "/bigobj") >> config.cmake
-        echo set(CMAKE_EXE_LINKER_FLAGS "/LARGEADDRESSAWARE") >>  config.cmake
-        echo set(CMAKE_SHARED_LINKER_FLAGS "/LARGEADDRESSAWARE") >> config.cmake
-        #echo set(CMAKE_STATIC_LINKER_FLAGS "/LARGEADDRESSAWARE") >> config.cmake  # Add this line
         echo set(CMAKE_BUILD_TYPE Release) >> config.cmake
         echo set(USE_LLVM "llvm-config --ignore-libllvm") >> config.cmake
         echo set(HIDE_PRIVATE_SYMBOLS ON) >> config.cmake
         echo set(USE_VULKAN ON) >> config.cmake
-        cmake -G "Visual Studio 17 2022" -A x64 .
-        cmake ..
-        cmake --build . --parallel 3 --verbose --config Release
-        # Diagnostic commands
-        echo "Listing all object files and their sizes:"
-        dir /s *.obj | sort
-        
-        # echo "Checking LLVM configuration:"
-        # llvm-config --components
-        # llvm-config --libs
-        # llvm-config --system-libs
-        # llvm-config --cxxflags
-
-    #     cd ..
-    #     cd python
-    #     pip install -e .
+        cmake -G "Visual Studio 17 2022" -A x64 ..
+        cmake --build . --target tvm_runtime
+        cd ..
+        cd python
+        pip install -e .
     # - name: Build MLC-LLM
     #   run: |
     #     mkdir build
