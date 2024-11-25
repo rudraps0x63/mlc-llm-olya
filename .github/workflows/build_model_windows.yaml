@@ -51,18 +51,27 @@ jobs:
         python --version
     - name: install ssl
       run: |
-        conda install openssl
+        conda uninstall openssl --force
+        conda uninstall pyopenssl --force
+        conda install -c anaconda openssl=3.0.12 pyopenssl
+        conda install -c anaconda libsodium
     - name: check ssl
       run: |
-        set "PATH=C:\Miniconda\Library\bin;%PATH%"
-        copy C:\Miniconda\Library\bin\libcrypto-3-x64.dll C:\Miniconda\envs\mlc-llm-build\Library\bin\
-        copy C:\Miniconda\Library\bin\libssl-3-x64.dll C:\Miniconda\envs\mlc-llm-build\Library\bin\
-        copy C:\Miniconda\Library\bin\libcrypto-3-x64.dll C:\Miniconda\envs\mlc-llm-build\DLLs\
-        copy C:\Miniconda\Library\bin\libssl-3-x64.dll C:\Miniconda\envs\mlc-llm-build\DLLs\
-        dir C:\Miniconda\Library\bin
-        dir C:\Miniconda\envs\mlc-llm-build\Library\bin
-        dir C:\Miniconda\envs\mlc-llm-build\DLLs
+        set "PATH=C:\Miniconda\Library\bin;C:\Miniconda\envs\mlc-llm-build\Library\bin;%PATH%"
+        where libcrypto-3-x64.dll
+        where libssl-3-x64.dll
+        python -c "import sys; print('\n'.join(sys.path))"
         python -c "import ssl; print(ssl.__file__)"
+
+        # set "PATH=C:\Miniconda\Library\bin;%PATH%"
+        # copy C:\Miniconda\Library\bin\libcrypto-3-x64.dll C:\Miniconda\envs\mlc-llm-build\Library\bin\
+        # copy C:\Miniconda\Library\bin\libssl-3-x64.dll C:\Miniconda\envs\mlc-llm-build\Library\bin\
+        # copy C:\Miniconda\Library\bin\libcrypto-3-x64.dll C:\Miniconda\envs\mlc-llm-build\DLLs\
+        # copy C:\Miniconda\Library\bin\libssl-3-x64.dll C:\Miniconda\envs\mlc-llm-build\DLLs\
+        # dir C:\Miniconda\Library\bin
+        # dir C:\Miniconda\envs\mlc-llm-build\Library\bin
+        # dir C:\Miniconda\envs\mlc-llm-build\DLLs
+        # python -c "import ssl; print(ssl.__file__)"
 
     - name: Install Visual Studio Build Tools 2022
       run: |
