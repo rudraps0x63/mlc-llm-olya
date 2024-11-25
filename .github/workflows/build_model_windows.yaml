@@ -49,9 +49,11 @@ jobs:
         conda list
         conda install zlib 
         python --version
-    - name: check ssl
+    - name: install ssl
       run: |
         conda install openssl
+    - name: check ssl
+      run: |
         dir C:\Miniconda\Library\bin
         copy C:\Miniconda\Library\bin\libcrypto-3-x64.dll C:\Miniconda\envs\mlc-llm-build\DLLs\
         copy C:\Miniconda\Library\bin\libssl-3-x64.dll C:\Miniconda\envs\mlc-llm-build\DLLs\
