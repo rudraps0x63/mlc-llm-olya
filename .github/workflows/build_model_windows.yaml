@@ -74,24 +74,23 @@ jobs:
         cd python
         set "PATH=%PATH%;D:\a\mlc-llm\tvm\build\Debug;D:\a\tvm\build\Debug"
         pip install -e .
-    # - name: Build MLC-LLM
-    #   run: |
-    #     mkdir build
-    #     cd build 
-    #     echo set(USE_VULKAN ON) >>config.cmake
-    #     echo set(TVM_SOURCE_DIR, $GITHUB_WORKSPACE/../tvm) >> config.cmake
-    #     type config.cmake
-    #     cmake ..
-    #     cmake --build . --parallel 3 
+    - name: Build MLC-LLM
+      run: |
+        mkdir build
+        cd build 
+        echo set(USE_VULKAN ON) >>config.cmake
+        echo set(TVM_SOURCE_DIR, $GITHUB_WORKSPACE/../tvm) >> config.cmake
+        type config.cmake
+        cmake ..
+        cmake --build . --parallel 3 
 
-    # - name: install mlc-llm
-    #   run: |
-    #     cd python
-    #     pip install -e .
-    # - name: download the model
-    #   run: |
-    #     git clone https://huggingface.co/Helsinki-NLP/opus-mt-en-it
-    # - name: compile model
-    #   run: >-
-    #     ci/models_build/marian.bat
-
+    - name: install mlc-llm
+      run: |
+        cd python
+        pip install -e .
+    - name: download the model
+      run: |
+        git clone https://huggingface.co/Helsinki-NLP/opus-mt-en-it
+    - name: Compile model
+        run: |
+            ./ci/models_build/marian.sh "${{ github.event.inputs.quantization }}" "${{ github.event.inputs.language_pair }}"
