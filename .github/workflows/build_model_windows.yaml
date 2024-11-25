@@ -72,6 +72,7 @@ jobs:
         cmake --build . --target tvm_runtime
         cd ..
         cd python
+        set "PATH=%PATH%;D:\a\mlc-llm\tvm\build\Debug;D:\a\tvm\build\Debug"
         pip install -e .
     # - name: Build MLC-LLM
     #   run: |
