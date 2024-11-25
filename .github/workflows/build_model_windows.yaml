@@ -92,5 +92,5 @@ jobs:
       run: |
         git clone https://huggingface.co/Helsinki-NLP/opus-mt-en-it
     - name: Compile model
-        run: |
+      run: |
             ./ci/models_build/marian.sh "${{ github.event.inputs.quantization }}" "${{ github.event.inputs.language_pair }}"
