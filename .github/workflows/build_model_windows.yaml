@@ -57,12 +57,18 @@ jobs:
         conda install -c anaconda libsodium
     - name: check ssl
       run: |
-        set "PATH=C:\Miniconda\Library\bin;C:\Miniconda\envs\mlc-llm-build\Library\bin;%PATH%"
+        # Remove mingw64 OpenSSL
+        rd /s /q "C:\Miniconda\envs\mlc-llm-build\Library\mingw64" 2>nul
+        
+        # Clean PATH of other OpenSSL locations
+        set "PATH=C:\Miniconda\Library\bin;C:\Miniconda\envs\mlc-llm-build\Library\bin;C:\Miniconda\envs\mlc-llm-build\Scripts;C:\Miniconda\envs\mlc-llm-build;C:\Windows\system32;C:\Windows"
+        
+        # Verify OpenSSL installation
+        conda list openssl
         where libcrypto-3-x64.dll
         where libssl-3-x64.dll
-        python -c "import sys; print('\n'.join(sys.path))"
-        python -c "import ssl; print(ssl.__file__)"
         
+        python -v -c "import ssl; print(ssl.__file__)"  
 
     - name: Install Visual Studio Build Tools 2022
       run: |
