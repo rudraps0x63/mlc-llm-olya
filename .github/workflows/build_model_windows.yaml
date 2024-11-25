@@ -99,8 +99,8 @@ jobs:
             ci/models_build/marian.bat "${{ github.event.inputs.quantization }}" "${{ github.event.inputs.language_pair }}"
     
     - name: Upload compied model as artifact
-        uses: actions/upload-artifact@v3
-        with:
+      uses: actions/upload-artifact@v3
+      with:
           name: output-${{ github.event.inputs.quantization }}-opus-mt-${{ github.event.inputs.language_pair }}
           path: output-${{ github.event.inputs.quantization }}-opus-mt-${{ github.event.inputs.language_pair }}/
             
