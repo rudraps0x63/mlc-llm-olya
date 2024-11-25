@@ -47,12 +47,16 @@ jobs:
       run: |
         conda info
         conda list
-        conda install zlib openssl
+        conda install zlib 
+        python --version
+    - name: check ssl
+      run: |
+        conda install openssl
         dir C:\Miniconda\Library\bin
         copy C:\Miniconda\Library\bin\libcrypto-3-x64.dll C:\Miniconda\envs\mlc-llm-build\DLLs\
         copy C:\Miniconda\Library\bin\libssl-3-x64.dll C:\Miniconda\envs\mlc-llm-build\DLLs\
-        python --version
         python -c "import ssl; print(ssl.__file__)"
+
     - name: Install Visual Studio Build Tools 2022
       run: |
           choco install visualstudio2022buildtools --version=17.11.9
