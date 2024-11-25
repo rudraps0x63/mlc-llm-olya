@@ -62,16 +62,7 @@ jobs:
         where libssl-3-x64.dll
         python -c "import sys; print('\n'.join(sys.path))"
         python -c "import ssl; print(ssl.__file__)"
-
-        # set "PATH=C:\Miniconda\Library\bin;%PATH%"
-        # copy C:\Miniconda\Library\bin\libcrypto-3-x64.dll C:\Miniconda\envs\mlc-llm-build\Library\bin\
-        # copy C:\Miniconda\Library\bin\libssl-3-x64.dll C:\Miniconda\envs\mlc-llm-build\Library\bin\
-        # copy C:\Miniconda\Library\bin\libcrypto-3-x64.dll C:\Miniconda\envs\mlc-llm-build\DLLs\
-        # copy C:\Miniconda\Library\bin\libssl-3-x64.dll C:\Miniconda\envs\mlc-llm-build\DLLs\
-        # dir C:\Miniconda\Library\bin
-        # dir C:\Miniconda\envs\mlc-llm-build\Library\bin
-        # dir C:\Miniconda\envs\mlc-llm-build\DLLs
-        # python -c "import ssl; print(ssl.__file__)"
+        
 
     - name: Install Visual Studio Build Tools 2022
       run: |
