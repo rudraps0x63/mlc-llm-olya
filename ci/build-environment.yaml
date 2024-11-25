@@ -13,3 +13,4 @@ dependencies:
   - git
   - cmake
   - bzip2
+  - openssl
