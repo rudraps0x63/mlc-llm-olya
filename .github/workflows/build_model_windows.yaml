@@ -74,6 +74,7 @@ jobs:
         cd python
         set "PATH=%PATH%;D:\a\mlc-llm\tvm\build\Debug;D:\a\tvm\build\Debug"
         pip install -e .
+        python -c "import tvm; print(tvm.__file__)"
     - name: Build MLC-LLM
       run: |
         mkdir build
@@ -86,6 +87,7 @@ jobs:
 
     - name: install mlc-llm
       run: |
+        set "PATH=%PATH%;D:\a\mlc-llm\mlc-llm\build\tokenizers\sentencepiece\src\Debug;D:\a\mlc-llm\mlc-llm\build\tokenizers\Debug;D:\a\mlc-llm\mlc-llm\build\Debug"
         cd python
         pip install -e .
     - name: download the model
