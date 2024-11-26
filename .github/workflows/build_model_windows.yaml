@@ -105,6 +105,7 @@ jobs:
         cmake ..
         cmake --build . --parallel 3 
         python -v -c "import ssl; print(ssl.__file__)"
+        
 
     - name: install mlc-llm
       run: |
@@ -112,14 +113,18 @@ jobs:
         cd python
         pip install -e .
         python -v -c "import ssl; print(ssl.__file__)"
+        python -v -c "import mlc_llm; print(mlc_llm.__file__)"
     - name: download the model
       run: |
         git clone https://huggingface.co/Helsinki-NLP/opus-mt-en-it
 
     - name: Compile model
       run: |
-        set "PATH=C:\Miniconda\envs\mlc-llm-build\Library\mingw64\bin;%PATH%;D:\a\mlc-llm\tvm\build\Debug;D:\a\mlc-llm\mlc-llm\build\tokenizers\sentencepiece\src\Debug;D:\a\mlc-llm\mlc-llm\build\tokenizers\Debug;D:\a\mlc-llm\mlc-llm\build\Debug;"
-        ci/models_build/marian.bat "${{ github.event.inputs.quantization }}" "${{ github.event.inputs.language_pair }}"
+        python -v -c "import ssl; print(ssl.__file__)"
+        python -v -c "import mlc_llm; print(mlc_llm.__file__)"
+        #set "PATH=%PATH%;D:\a\mlc-llm\tvm\build\Debug;D:\a\mlc-llm\mlc-llm\build\tokenizers\sentencepiece\src\Debug;D:\a\mlc-llm\mlc-llm\build\tokenizers\Debug;D:\a\mlc-llm\mlc-llm\build\Debug;"
+        python -m mlc_llm convert_weight --model-type marian ./opus-mt-en-it --quantization q0f32 --output ./output
+        #ci/models_build/marian.bat "${{ github.event.inputs.quantization }}" "${{ github.event.inputs.language_pair }}"
     
     - name: Upload compied model as artifact
       uses: actions/upload-artifact@v3
