@@ -47,7 +47,10 @@ jobs:
         python -m venv mlc_build_env
         call .\mlc_build_env\Scripts\activate
         python --version
-
+    - name: install dependencies
+      run: |
+        choco install vulkan-sdk cmake
+        vulkaninfo
     - name: Install Visual Studio Build Tools 2022
       run: |
           choco install visualstudio2022buildtools --version=17.11.9
