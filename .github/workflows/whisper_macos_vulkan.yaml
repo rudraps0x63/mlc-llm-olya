@@ -34,30 +34,10 @@ jobs:
           git-lfs install
           git clone --depth 1 https://huggingface.co/openai/whisper-tiny
 
-
-      - name: Clone and Build TVM with Metal
+      - name: TVM python pkg
         run: |
-          export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
           source ./venv/bin/activate
-          cd ..
-          git clone --recursive https://github.com/mlc-ai/relax.git tvm
-          cd tvm
-          git reset --hard 176d01e61276b0e94910fd904363ef4cd91fb8b5
-          mkdir build
-          cd build
-          cp ../cmake/config.cmake .
-          echo "set(CMAKE_BUILD_TYPE RelWithDebInfo)" >> config.cmake
-          echo "set(USE_LLVM \"llvm-config --ignore-libllvm --link-static\")" >> config.cmake
-          echo "set(HIDE_PRIVATE_SYMBOLS ON)" >> config.cmake
-          echo "set(USE_METAL ON)" >> config.cmake
-          cmake ..
-          # sed -i '' 's/\/opt\/homebrew/\/Users\/dev\/.local/g' ./CMakeFiles/tvm.dir/link.txt
-          # sed -i '' 's/\/opt\/homebrew/\/Users\/dev\/.local/g' ./CMakeFiles/tvm.dir/build.make
-          cmake --build .
-          cd ..
-          cd python
-          pip install -e .
-
+          python -m pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly-cpu
      
       - name: Create build directory
         shell: bash
@@ -68,7 +48,7 @@ jobs:
           cp ../cmake/config.cmake .
           echo "set(TVM_SOURCE_DIR, $GITHUB_WORKSPACE/../tvm)" >> config.cmake
           echo "set(USE_METAL ON)" >> config.cmake
-          cmake .. 
+          cmake ..
 
       - name: Build the project
         shell: bash
@@ -77,11 +57,6 @@ jobs:
           source ./venv/bin/activate
           cd build
           cmake --build .
-
-      # - name: Cleanup to free space
-      #   run: |
-      #     echo "Cleaning up to free disk space"
-      #     rm -rf $HOME/.cargo $HOME/.rustup 3rdparty/tvm /__t/CodeQL
 
       - name: Install mlc-llm
         run: |
