@@ -1,4 +1,3 @@
-set(TVM_SOURCE_DIR ../tvm)
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 set(USE_CUDA OFF)
 set(USE_CUTLASS OFF)
