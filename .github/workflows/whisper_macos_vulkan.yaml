@@ -46,7 +46,6 @@ jobs:
           mkdir build
           cd build
           cp ../cmake/config.cmake .
-          echo "set(TVM_SOURCE_DIR, $GITHUB_WORKSPACE/../tvm)" >> config.cmake
           echo "set(USE_METAL ON)" >> config.cmake
           cmake ..
 
