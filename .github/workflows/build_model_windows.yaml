@@ -72,8 +72,9 @@ jobs:
           python -v -c "import ssl; print(ssl.__file__)"
     - name: build tvm
       run: |
-        set "PATH=%PATH%;C:\Miniconda\envs\mlc-llm-build\Library\mingw64\bin;C:\Miniconda\envs\mlc-llm-build\Library\mingw64\include;C:\Miniconda\envs\mlc-llm-build\Library\mingw64"
-        set ZLIB_LIBRARY=C:\Miniconda\envs\mlc-llm-build\Library\mingw64\bin\zlib1.dll
+        set "PATH=%PATH%;D:\a\msys64\mingw64\bin;D:\a\msys64\mingw64\include;D:\a\msys64\mingw64"
+        set ZLIB_LIBRARY=D:\a\msys64\mingw64\bin\zlib1.dll
+        python -v -c "import ssl; print(ssl.__file__)"
         cd ..
         git clone -b mlc --recursive https://github.com/mlc-ai/relax.git tvm
         cd tvm
@@ -81,7 +82,7 @@ jobs:
         mkdir build
         cd build
         cp ../cmake/config.cmake .
-        echo set(CMAKE_BUILD_TYPE Release) >> config.cmake
+        echo set(CMAKE_BUILD_TYPE Debug) >> config.cmake
         echo set(USE_LLVM "llvm-config --ignore-libllvm") >> config.cmake
         echo set(HIDE_PRIVATE_SYMBOLS ON) >> config.cmake
         echo set(USE_VULKAN ON) >> config.cmake
