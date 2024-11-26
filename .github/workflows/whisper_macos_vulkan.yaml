@@ -89,6 +89,8 @@ jobs:
           cd python
           pip install -e .
 
+      - uses: mxschmitt/action-tmate@v3
+
       - name: Compile model
         run: |
           source ./venv/bin/activate
