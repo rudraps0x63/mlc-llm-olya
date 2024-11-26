@@ -45,8 +45,9 @@ jobs:
     - name: create venv
       run: |
         python -m venv mlc_build_env
-        .\mlc_build_env\Scripts\activate
-  
+        call .\mlc_build_env\Scripts\activate
+        python --version
+
     - name: Install Visual Studio Build Tools 2022
       run: |
           choco install visualstudio2022buildtools --version=17.11.9
@@ -54,7 +55,7 @@ jobs:
           python -v -c "import ssl; print(ssl.__file__)"
     - name: build tvm
       run: |
-        .\mlc_build_env\Scripts\activate
+        call .\mlc_build_env\Scripts\activate
         set "PATH=%PATH%;D:\a\msys64\mingw64\bin;D:\a\msys64\mingw64\include;D:\a\msys64\mingw64"
         set ZLIB_LIBRARY=D:\a\msys64\mingw64\bin\zlib1.dll
         python -v -c "import ssl; print(ssl.__file__)"
@@ -79,7 +80,7 @@ jobs:
         python -v -c "import ssl; print(ssl.__file__)"
     - name: Build MLC-LLM
       run: |
-        .\mlc_build_env\Scripts\activate
+        call .\mlc_build_env\Scripts\activate
         mkdir build
         cd build 
         cp ../cmake/config.cmake .
@@ -93,7 +94,7 @@ jobs:
 
     - name: install mlc-llm
       run: |
-        .\mlc_build_env\Scripts\activate
+        call .\mlc_build_env\Scripts\activate
         set "PATH=%PATH%;D:\a\mlc-llm\tvm\build\Debug;D:\a\mlc-llm\mlc-llm\build\tokenizers\sentencepiece\src\Debug;D:\a\mlc-llm\mlc-llm\build\tokenizers\Debug;D:\a\mlc-llm\mlc-llm\build\Debug"
         cd python
         pip install -e .
@@ -105,7 +106,7 @@ jobs:
 
     - name: Compile model
       run: |
-        .\mlc_build_env\Scripts\activate
+        call .\mlc_build_env\Scripts\activate
         python -v -c "import ssl; print(ssl.__file__)"
         python -v -c "import mlc_llm; print(mlc_llm.__file__)"
         #set "PATH=%PATH%;D:\a\mlc-llm\tvm\build\Debug;D:\a\mlc-llm\mlc-llm\build\tokenizers\sentencepiece\src\Debug;D:\a\mlc-llm\mlc-llm\build\tokenizers\Debug;D:\a\mlc-llm\mlc-llm\build\Debug;"
