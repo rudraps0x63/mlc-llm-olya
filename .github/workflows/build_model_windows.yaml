@@ -109,11 +109,11 @@ jobs:
 
     - name: install mlc-llm
       run: |
-        set "PATH=%PATH%;D:\a\mlc-llm\mlc-llm\build\tokenizers\sentencepiece\src\Debug;D:\a\mlc-llm\mlc-llm\build\tokenizers\Debug;D:\a\mlc-llm\mlc-llm\build\Debug"
+        set "PATH=%PATH%;D:\a\mlc-llm\tvm\build\Debug;D:\a\mlc-llm\mlc-llm\build\tokenizers\sentencepiece\src\Debug;D:\a\mlc-llm\mlc-llm\build\tokenizers\Debug;D:\a\mlc-llm\mlc-llm\build\Debug"
         cd python
         pip install -e .
         python -v -c "import ssl; print(ssl.__file__)"
-        python -v -c "import mlc_llm; print(mlc_llm.__file__)"
+        python -v -c "import os; print(os.environ.get('PATH')); import mlc_llm; print(mlc_llm.__file__)"
     - name: download the model
       run: |
         git clone https://huggingface.co/Helsinki-NLP/opus-mt-en-it
