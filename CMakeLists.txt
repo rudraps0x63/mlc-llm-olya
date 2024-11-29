@@ -24,16 +24,18 @@ endif(NOT CMAKE_BUILD_TYPE)
 option(MLC_HIDE_PRIVATE_SYMBOLS "Hide private symbols" ON)
 
 #during dynamic build for model compilation the MLC_LLM_STATIC is get by gen_cmake_config.py
-if(NOT DEFINED MLC_LLM_STATIC )
-set(MLC_LLM_STATIC ON)
+if( NOT DEFINED MLC_LLM_STATIC )
+set(MLC_LLM_STATIC OFF)
 endif()
+
 message("MLC_LLM_STATIC : ${MLC_LLM_STATIC}")
 
 if(MLC_LLM_STATIC)
-# We care only about static libs
-set(MLC_LLM_INSTALL_STATIC_LIB ON)
-set(BUILD_STATIC_RUNTIME ON)
+  # We care only about static libs
+  set(MLC_LLM_INSTALL_STATIC_LIB ON)
+  set(BUILD_STATIC_RUNTIME ON)
 endif()
+
 set(MLC_VISIBILITY_FLAG "")
 if (MLC_HIDE_PRIVATE_SYMBOLS)
   set(HIDE_PRIVATE_SYMBOLS ON)
@@ -97,16 +99,12 @@ target_include_directories(mlc_llm_objs PRIVATE ${TOKENZIER_CPP_PATH}/include)
 target_compile_definitions(mlc_llm_objs PRIVATE -DMLC_LLM_EXPORTS)
 target_include_directories(mlc_llm_objs PRIVATE 3rdparty/stb)
 
-if( NOT MLC_LLM_STATIC)
 add_library(mlc_llm SHARED $<TARGET_OBJECTS:mlc_llm_objs>)
-endif()
 add_library(mlc_llm_static STATIC $<TARGET_OBJECTS:mlc_llm_objs>)
 add_dependencies(mlc_llm_static tokenizers_cpp sentencepiece-static tokenizers_c tvm_runtime)
 
-if( NOT MLC_LLM_STATIC)
 target_link_libraries(mlc_llm PUBLIC tvm_runtime)
 target_link_libraries(mlc_llm PRIVATE tokenizers_cpp)
-endif()
 
 add_compile_options(-Wno-array-bounds)
 
@@ -120,8 +118,8 @@ find_library(
 if (FLASH_ATTN_LIBRARY STREQUAL "FLASH_ATTN_LIBRARY-NOTFOUND")
   message(WARNING "Cannot find libflash_attn. The model must not have been built with --use-flash-attn-mqa option.")
 else ()
-  if( NOT MLC_LLM_STATIC)
-     target_link_libraries(mlc_llm PUBLIC -Wl,--no-as-needed ${FLASH_ATTN_LIBRARY})
+  if(NOT MLC_LLM_STATIC)
+    target_link_libraries(mlc_llm PUBLIC -Wl,--no-as-needed ${FLASH_ATTN_LIBRARY})
   endif()
   target_link_libraries(mlc_llm_static PUBLIC -Wl,--no-as-needed ${FLASH_ATTN_LIBRARY})
 endif()
@@ -147,7 +145,6 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Android")
   target_link_libraries(tokenizers_cpp PRIVATE log)
 endif()
 
-if(NOT MLC_LLM_STATIC)
 add_library(mlc_llm_module SHARED $<TARGET_OBJECTS:mlc_llm_objs>)
 target_link_libraries(mlc_llm_module PUBLIC tvm)
 target_link_libraries(mlc_llm_module PRIVATE tokenizers_cpp)
@@ -156,7 +153,6 @@ target_link_libraries(mlc_llm_module PRIVATE tokenizers_cpp)
 set_property(TARGET mlc_llm_module APPEND PROPERTY LINK_OPTIONS "${MLC_VISIBILITY_FLAG}")
 set_property(TARGET mlc_llm APPEND PROPERTY LINK_OPTIONS "${MLC_VISIBILITY_FLAG}")
 
-endif()
 find_program(CARGO_EXECUTABLE cargo)
 
 if(NOT CARGO_EXECUTABLE)
@@ -166,7 +162,6 @@ endif()
 if(NOT MLC_LLM_STATIC)
 # when this option is on,
 # we install all static lib deps into lib
-
   install(TARGETS tvm_runtime mlc_llm mlc_llm_module
     mlc_llm_static
     tokenizers_cpp
