@@ -46,7 +46,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        choco install cmake
+        winget install -e --id Kitware.CMake
         winget install -e --id KhronosGroup.VulkanSDK
 
     - name: Install Visual Studio Build Tools 2022
