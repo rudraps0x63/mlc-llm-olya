@@ -53,9 +53,7 @@ jobs:
         refreshenv
         python -v -c "import ssl; print(ssl.__file__)"
 
-    - name: Breakpoint
-      uses: Cyberboss/install-winget@v1
-      uses: mxschmitt/action-tmate@v3
+    - uses: mxschmitt/action-tmate@v3
 
     - name: Build MLC-LLM
       run: |
