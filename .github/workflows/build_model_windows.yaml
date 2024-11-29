@@ -41,8 +41,10 @@ jobs:
         call .\mlc_build_env\Scripts\activate
         python --version
 
-    - name: Install dependencies
+    - name: Install winget
       uses: Cyberboss/install-winget@v1
+
+    - name: Install dependencies
       run: |
         choco install cmake
         winget install -e --id KhronosGroup.VulkanSDK
