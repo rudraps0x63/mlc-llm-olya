@@ -42,9 +42,10 @@ jobs:
         python --version
 
     - name: Install dependencies
+      uses: Cyberboss/install-winget@v1
       run: |
-        choco install winget.powershell
         choco install cmake
+        winget install -e --id KhronosGroup.VulkanSDK
 
     - name: Install Visual Studio Build Tools 2022
       run: |
@@ -52,7 +53,9 @@ jobs:
         refreshenv
         python -v -c "import ssl; print(ssl.__file__)"
 
-    - uses: mxschmitt/action-tmate@v3
+    - name: Breakpoint
+      uses: Cyberboss/install-winget@v1
+      uses: mxschmitt/action-tmate@v3
 
     - name: Build MLC-LLM
       run: |
