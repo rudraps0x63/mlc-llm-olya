@@ -61,7 +61,7 @@ jobs:
         cd C:\VulkanSDK\*
         $env:VULKAN_SDK = pwd
         cd $buildDir
-        call .\mlc_build_env\Scripts\activate
+        .\mlc_build_env\Scripts\activate
         mkdir build
         cd build 
         cmake -DUSE_VULKAN=ON ..
