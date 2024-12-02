@@ -55,6 +55,7 @@ jobs:
         python -v -c "import ssl; print(ssl.__file__)"
 
     - name: Build MLC-LLM
+      shell: pwsh
       run: |
         $buildDir = pwd
         cd C:\VulkanSDK\*
