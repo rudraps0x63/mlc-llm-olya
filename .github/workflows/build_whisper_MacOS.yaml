@@ -52,6 +52,7 @@ jobs:
       - name: Install the built MLC-LLM package
         run: |
           source ./venv/bin/activate
+          python -m pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly-cpu
           cd python
           pip install -e .
 
