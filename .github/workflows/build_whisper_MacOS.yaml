@@ -1,4 +1,4 @@
-name: Build for macOS with Metal Backend
+name: Compile Whisper-Tiny for MacOS (with Metal)
 
 on:
   workflow_dispatch:
