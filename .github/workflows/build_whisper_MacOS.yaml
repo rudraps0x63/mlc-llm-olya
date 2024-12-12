@@ -29,11 +29,27 @@ jobs:
           python3.11 -m pip install --upgrade pip
           export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
 
-      - name: Download model
+      - name: Clone and Build TVM with Metal
         run: |
-          git-lfs install
+          export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
+          source ./venv/bin/activate
+          cd ..
+          git clone --recursive https://github.com/apache/tvm tvm_
+          echo "TVM_HOME=$(pwd)/tvm_" >> $GITHUB_ENV
+          cd tvm_
+          git reset --hard d5b9f5c30bc3e1f5e1a283ed19c5440afcc45889
+          mkdir build
+          cd build
+          cp ../cmake/config.cmake .
+          echo "set(CMAKE_BUILD_TYPE Release)" >> config.cmake
+          echo "set(USE_LLVM \"llvm-config --ignore-libllvm --link-static\")" >> config.cmake
+          echo "set(HIDE_PRIVATE_SYMBOLS OFF)" >> config.cmake
+          echo "set(USE_METAL ON)" >> config.cmake
+          cmake ..
+          cmake --build . --parallel $(sysctl -n hw.ncpu)
+          cd ..
           cd python
-          git clone --depth 1 https://huggingface.co/openai/whisper-tiny
+          pip install -e .
      
       - name: Build the repository
         shell: bash
@@ -41,18 +57,22 @@ jobs:
           source ./venv/bin/activate
           mkdir build
           cd build
-          cmake -DUSE_METAL=ON ..
+          cp ../cmake/config.cmake .
+          echo "set(TVM_SOURCE_DIR ${{ env.TVM_HOME }})" >> config.cmake
+          echo "set(USE_METAL ON)" >> config.cmake
+          cat config.cmake
+          cmake ..
           cmake --build . --parallel $(sysctl -n hw.ncpu)
 
-      # - name: Cleanup to free space
-      #   run: |
-      #     echo "Cleaning up to free disk space"
-      #     rm -rf $HOME/.cargo $HOME/.rustup 3rdparty/tvm /__t/CodeQL
+      - name: Download model
+        run: |
+          git-lfs install
+          cd python
+          git clone --depth 1 https://huggingface.co/openai/whisper-tiny
 
       - name: Install the built MLC-LLM package
         run: |
           source ./venv/bin/activate
-          python -m pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly-cpu
           cd python
           pip install -e .
 
