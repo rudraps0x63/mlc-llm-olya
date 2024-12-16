@@ -92,7 +92,7 @@ jobs:
           mkdir ${{ matrix.platform }}-${{ matrix.arch }}
           python -m mlc_llm convert_weight --model-type ${{ github.event.inputs.type }} ./model --quantization ${{ github.event.inputs.quantization }} --output ./output_model
           python -m mlc_llm gen_config --model-type ${{ github.event.inputs.type }} ./model --quantization ${{ github.event.inputs.quantization }} --conv-template ${{ github.event.inputs.type }} --output ./output_model
-          python -m mlc_llm compile --model-type $${{ github.event.inputs.type }} ./output_model --quantization ${{ github.event.inputs.quantization }} --host ${{ matrix.triple }} --device vulkan --output ${{ matrix.platform }}-${{ matrix.arch }}/${{ github.event.inputs.name }}-${{ github.event.inputs.quantization }}.tar
+          python -m mlc_llm compile --model-type ${{ github.event.inputs.type }} ./output_model --quantization ${{ github.event.inputs.quantization }} --host ${{ matrix.triple }} --device vulkan --output ${{ matrix.platform }}-${{ matrix.arch }}/${{ github.event.inputs.name }}-${{ github.event.inputs.quantization }}.tar
       - name: Upload as artifact
         uses: actions/upload-artifact@v3
         with:
@@ -190,7 +190,7 @@ jobs:
           source ./venv/bin/activate
           python -m mlc_llm convert_weight --model-type ${{ github.event.inputs.type }} ./model --quantization ${{ github.event.inputs.quantization }} --output ./output_model
           python -m mlc_llm gen_config --model-type ${{ github.event.inputs.type }} ./model --quantization ${{ github.event.inputs.quantization }} --conv-template ${{ github.event.inputs.type }} --output ./output_model
-          python -m mlc_llm compile --model-type marian ./output_model --quantization ${{ github.event.inputs.quantization }} --host ${{ matrix.triple }} --device metal --output ${{ matrix.platform }}-${{ matrix.arch }}/${{ github.event.inputs.name }}-${{ github.event.inputs.quantization }}.tar
+          python -m mlc_llm compile --model-type ${{ github.event.inputs.type }} ./output_model --quantization ${{ github.event.inputs.quantization }} --host ${{ matrix.triple }} --device metal --output ${{ matrix.platform }}-${{ matrix.arch }}/${{ github.event.inputs.name }}-${{ github.event.inputs.quantization }}.tar
       - name: Upload as artifact
         uses: actions/upload-artifact@v3
         with:
