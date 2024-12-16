@@ -1,4 +1,4 @@
-name: Compile Whisper-Tiny for MacOS (with Metal)
+name: Compile Whisper-Tiny for MacOS (arm64) with Metal
 
 on:
   workflow_dispatch:
@@ -28,12 +28,6 @@ jobs:
           source ./venv/bin/activate
           python3.11 -m pip install --upgrade pip
           export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
-
-      - name: Download model
-        run: |
-          git-lfs install
-          cd python
-          git clone --depth 1 https://huggingface.co/openai/whisper-tiny
      
       - name: Build the repository
         shell: bash
@@ -44,21 +38,29 @@ jobs:
           cmake -DUSE_METAL=ON ..
           cmake --build . --parallel $(sysctl -n hw.ncpu)
 
-      - name: Install the built MLC-LLM package
+      - name: Install TVM and the built MLC-LLM package
         run: |
           source ./venv/bin/activate
           python -m pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly-cpu
           cd python
           pip install -e .
 
-      - uses: mxschmitt/action-tmate@v3
+      - name: Download model
+        run: |
+          git-lfs install
+          git clone --depth 1 https://huggingface.co/openai/whisper-tiny
 
       - name: Compile model
         run: |
           source ./venv/bin/activate
+          mkdir output-${{ github.event.inputs.quantization }}
+          cd output-${{ github.event.inputs.quantization }}
+          mlc_llm convert_weight --model-type whisper-tiny ../whisper-tiny --quantization ${{ github.event.inputs.quantization }} --output .
+          mlc_llm gen_config --model-type whisper-tiny ../whisper-tiny --quantization ${{ github.event.inputs.quantization }} --conv-template whisper-tiny --output .
+          mlc_llm compile --model-type whisper-tiny . --quantization ${{ github.event.inputs.quantization }} --output ./whisper-tiny.so
 
       - name: Upload compiled model as artifact
         uses: actions/upload-artifact@v3
         with:
-          name: output-${{ github.event.inputs.quantization }}-opus-mt-${{ github.event.inputs.language_pair }}
-          path: output-${{ github.event.inputs.quantization }}-opus-mt-${{ github.event.inputs.language_pair }}/
+          name: whisper-tiny-${{ github.event.inputs.quantization }}-macos
+          path: output-${{ github.event.inputs.quantization }}
