@@ -1,0 +1,198 @@
+name: Build model libraries for whisper
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: "Name of model"
+        default: "opus"
+        required: true
+      type:
+        description: "Model type"
+        default: "marian"
+        required: true
+      model-repo:
+        description: "HuggingFace repo to download weights from"
+        default: "Helsinki-NLP/opus-mt-en-it"
+        required: true
+      quantization:
+        description: "Quantization of model"
+        default: "q4f16_1"
+        required: true
+        options:
+          - q4f16_1
+          - q4f32_1
+          - q0f32
+
+jobs:
+  linux:
+    strategy:
+      matrix:
+        include:
+          - platform: linux
+            arch: x64
+            triple: x86_64-unknown-linux-gnu
+          - platform: android
+            arch: arm64
+            triple: aarch64-linux-android
+
+    runs-on: ubuntu-22.04
+    name: ${{ matrix.platform }}-${{ matrix.triple }}
+    container:
+      image: ghcr.io/tetherto/models_build:ubuntu22.04_vulkan_mlc
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+          fetch-depth: 1
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Install Rust
+        shell: bash
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH  # Add Rust to the PATH for GitHub Actions
+          source $HOME/.cargo/env && rustup --version && cargo --version
+      - name: Install TVM
+        run: |
+          cd /tvm/python
+          pip install -e .
+      - name: verify tvm installation
+        run: |
+          echo "Verifying tvm instalation "
+          python -c "import tvm; print(tvm.__file__)"
+      - name: Run a command in the container
+        run: |
+          echo "Verifying vulkan instalation "
+          python --version
+          vulkaninfo
+          cargo --version
+          rustup --version
+
+      - name: Create build directory
+        shell: bash
+        run: mkdir build && cd build && cp ../cmake/config.cmake . && cmake ..
+
+      - name: Build the mlc-llm
+        shell: bash
+        run: |
+          source $HOME/.cargo/env && cd build && cmake --build .
+      - name: cleanup #needed as there is only 15G on runner, not enough for mlc-llm instalation
+        run: rm -rf $HOME/.cargo $HOME/.rustup 3rdpary/tvm  /__t/CodeQL
+
+      - name: Install mlc-llm
+        run: |
+          cd python && pip install -e .
+      - name: Download model
+        run: git-lfs install && git clone https://huggingface.co/${{ github.event.inputs.model-repo }} model
+
+      - name: Compile model
+        run: |
+          mkdir ${{ matrix.platform }}-${{ matrix.arch }}
+          python -m mlc_llm convert_weight --model-type ${{ github.event.inputs.type }} ./model --quantization ${{ github.event.inputs.quantization }} --output ./output_model
+          python -m mlc_llm gen_config --model-type ${{ github.event.inputs.type }} ./model --quantization ${{ github.event.inputs.quantization }} --conv-template ${{ github.event.inputs.type }} --output ./output_model
+          python -m mlc_llm compile --model-type marian ./output_model --quantization ${{ github.event.inputs.quantization }} --host ${{ matrix.triple }} --device vulkan --output ${{ matrix.platform }}-${{ matrix.arch }}/${{ github.event.inputs.name }}-${{ github.event.inputs.quantization }}.tar
+      - name: Upload as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.platform }}-${{ matrix.arch }}
+          path: ${{ matrix.platform }}-${{ matrix.arch }}/
+
+  mac:
+    strategy:
+      matrix:
+        include:
+          - os: macos-14
+            platform: darwin
+            arch: x64
+            triple: x86_64-apple-darwin
+          - os: macos-14
+            platform: darwin
+            arch: arm64
+            triple: aarch64-apple-darwin
+          - os: macos-14
+            platform: ios
+            arch: arm64
+            triple: aarch64-apple-ios
+
+    runs-on: macos-latest
+    name: ${{ matrix.platform }}-${{ matrix.triple }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Install Dependencies
+        run: |
+          brew install llvm cmake git python@3.11  git-lfs
+          python3.11 -m venv ./venv
+          source ./venv/bin/activate
+          python3.11 -m pip install --upgrade pip
+          export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
+      - name: Download model
+        run: |
+          git-lfs install
+          git clone --depth 1 https://huggingface.co/${{ github.event.inputs.model-repo }} model
+      - name: Clone and Build TVM with Metal
+        run: |
+          export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
+          source ./venv/bin/activate
+          cd ..
+          git clone --recursive https://github.com/apache/tvm tvm_
+          echo "TVM_HOME=$(pwd)/tvm_" >> $GITHUB_ENV
+          cd tvm_
+          git reset --hard d5b9f5c30bc3e1f5e1a283ed19c5440afcc45889
+          mkdir build
+          cd build
+          cp ../cmake/config.cmake .
+          echo "set(CMAKE_BUILD_TYPE RelWithDebInfo)" >> config.cmake
+          echo "set(USE_LLVM \"llvm-config --ignore-libllvm --link-static\")" >> config.cmake
+          echo "set(HIDE_PRIVATE_SYMBOLS ON)" >> config.cmake
+          echo "set(USE_METAL ON)" >> config.cmake
+          cmake ..
+          # sed -i '' 's/\/opt\/homebrew/\/Users\/dev\/.local/g' ./CMakeFiles/tvm.dir/link.txt
+          # sed -i '' 's/\/opt\/homebrew/\/Users\/dev\/.local/g' ./CMakeFiles/tvm.dir/build.make
+          cmake --build .
+          cd ..
+          cd python
+          pip install -e .
+
+      - name: Create build directory
+        shell: bash
+        run: |
+          source ./venv/bin/activate
+          mkdir build
+          cd build
+          cp ../cmake/config.cmake .
+          echo "set(TVM_SOURCE_DIR ${{ env.TVM_HOME }})" >> config.cmake
+          echo "set(USE_METAL ON)" >> config.cmake
+          echo "set(USE_VULKAN OFF)" >> config.cmake
+          cat config.cmake
+          cmake ..
+      - name: Build the project
+        shell: bash
+        run: |
+          # source $HOME/.cargo/env
+          source ./venv/bin/activate
+          cd build
+          cmake --build .
+      - name: Install mlc-llm
+        run: |
+          source ./venv/bin/activate
+          cd python
+          pip install -e .
+      - name: Compile model
+        run: |
+          mkdir ${{ matrix.platform }}-${{ matrix.arch }}
+          source ./venv/bin/activate
+          python -m mlc_llm convert_weight --model-type ${{ github.event.inputs.type }} ./model --quantization ${{ github.event.inputs.quantization }} --output ./output_model
+          python -m mlc_llm gen_config --model-type ${{ github.event.inputs.type }} ./model --quantization ${{ github.event.inputs.quantization }} --conv-template ${{ github.event.inputs.type }} --output ./output_model
+          python -m mlc_llm compile --model-type marian ./output_model --quantization ${{ github.event.inputs.quantization }} --host ${{ matrix.triple }} --device metal --output ${{ matrix.platform }}-${{ matrix.arch }}/${{ github.event.inputs.name }}-${{ github.event.inputs.quantization }}.tar
+      - name: Upload as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.platform }}-${{ matrix.arch }}
+          path: ${{ matrix.platform }}-${{ matrix.arch }}/
