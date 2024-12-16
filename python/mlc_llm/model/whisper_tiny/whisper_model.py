@@ -538,7 +538,7 @@ class WhisperForConditionalGeneration(nn.Module):
                 },
             },
             "decode": {
-                "input_ids": nn.spec.Tensor([batch_size, 1], "int32"),
+                "input_ids": nn.spec.Tensor([batch_size, "seq_len"], "int32"),
                 "total_seq_len": int,
                 "encoder_hidden_states": nn.spec.Tensor(
                     [batch_size, self.config.max_source_positions, self.config.d_model], "float32"
